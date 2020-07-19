@@ -1,13 +1,12 @@
-export default class Tiles extends Phaser.GameObjects.Sprite {
-  constructor(scene, x, y, texture, value) {
+export default class PowerUp extends Phaser.GameObjects.Sprite {
+  constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
     scene.add.existing(this);
 
     this.value = value;
     this.destroyed = false;
     this.setPosition(x, y).setOrigin(0, 0);
-    scene.physics.world.enableBody(this, 1);
-    scene.tiles.add(this);
+    scene.physics.world.enableBody(this, 0);
   }
 
   hitTile() {

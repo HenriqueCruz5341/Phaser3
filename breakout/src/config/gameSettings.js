@@ -3,6 +3,6 @@ export default {
     speed: 300,
   },
   ball: {
-    speed: 400,
+    speed: 350,
   },
 };
