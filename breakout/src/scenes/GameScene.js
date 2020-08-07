@@ -12,32 +12,37 @@ export default class GameScene extends Phaser.Scene {
     this.tiles = this.add.group();
     let t;
 
-    t = new Tiles(this, 0, 40, "tileBlue", 10);
-    t = new Tiles(this, 96, 72, "tileRed", 10);
-    t = new Tiles(this, 192, 104, "tileYellow", 20);
-    t = new Tiles(this, 288, 136, "tilePurple", 30);
-    t = new Tiles(this, 288, 40, "tilePurple", 30);
+    for (let i = 0; i <= 672; i += 96) {
+      for (let j = 40; j <= 72; j += 32) {
+        if (j == 40) t = new Tiles(this, i, j, "tileYellow", 20);
+        else if (j == 72) t = new Tiles(this, i, j, "tilePurple", 30);
+      }
+    }
 
-    // for (let i = 0; i <= 672; i += 96) {
-    //   for (let j = 40; j <= 136; j += 32) {
-    //     if (j == 40) t = new Tiles(this, i, j, "tileBlue", 10);
-    //     else if (j == 72) t = new Tiles(this, i, j, "tileRed", 10);
-    //     else if (j == 104) t = new Tiles(this, i, j, "tileYellow", 20);
-    //     else if (j == 136) t = new Tiles(this, i, j, "tilePurple", 30);
-    //   }
-    // }
+    for (let i = 0; i <= 672; i += 96) {
+      if (i % 192) t = new Tiles(this, i, 104, "tileBlue", 10);
+      else t = new Tiles(this, i, 136, "tileRed", 10);
+    }
+
+    for (let i = 0; i <= 672; i += 96) {
+      for (let j = 168; j <= 200; j += 32) {
+        if (i == 288 || i == 384) t = new Tiles(this, i, j, "tileBlue", 10);
+        else if (j == 168) t = new Tiles(this, i, j, "tileYellow", 20);
+        else if (j == 200) t = new Tiles(this, i, j, "tilePurple", 30);
+      }
+    }
 
     this.powerUp = this.add.group();
     this.powerUp.add(
       this.physics.add
-        .staticImage(200, 200, "powerUp")
+        .staticImage(96, 136, "powerUp")
         .setOrigin(0, 0)
         .setScale(0.25)
         .refreshBody()
     );
     this.powerUp.add(
       this.physics.add
-        .staticImage(96, 40, "powerUp")
+        .staticImage(576, 104, "powerUp")
         .setOrigin(0, 0)
         .setScale(0.25)
         .refreshBody()
@@ -54,10 +59,15 @@ export default class GameScene extends Phaser.Scene {
       .setScale(0.25);
     this.cursorKeeys = this.input.keyboard.createCursorKeys();
     this.player.setCollideWorldBounds(true);
+    this.audioGrow = this.sound.add("audioGrow");
+    this.audioDecrease = this.sound.add("audioDecrease");
 
     this.ball = this.physics.add
-      .sprite(config.width / 2, config.height / 2, "ball")
+      .sprite(this.player.x, config.height - 70, "ball")
       .setScale(0.25);
+    this.ball.body.onWorldBounds = true;
+    this.audioBall = this.sound.add("audioBall");
+    this.audioBurn = this.sound.add("audioBurn");
 
     this.ball.setCollideWorldBounds(true);
     this.qtdHitPlayer = 1;
@@ -70,7 +80,13 @@ export default class GameScene extends Phaser.Scene {
     );
 
     this.physics.add.collider(this.ball, this.tiles, this.hitTile, null, this);
-    this.physics.add.collider(this.ball, this.roof, null, null, this);
+    this.physics.add.collider(
+      this.ball,
+      this.roof,
+      () => this.audioBall.play(),
+      null,
+      this
+    );
     for (let i = 0; i < this.powerUp.children.entries.length; i++) {
       this.powerUp.children.entries[i].collider = this.physics.add.collider(
         this.ball,
@@ -104,6 +120,8 @@ export default class GameScene extends Phaser.Scene {
       null,
       this
     );
+
+    this.physics.world.on("worldbounds", () => this.audioBall.play(), this);
 
     var graphics = this.add.graphics();
     graphics.fillStyle(0x000000, 1);
@@ -145,16 +163,16 @@ export default class GameScene extends Phaser.Scene {
       .setScale(0.25)
       .setOrigin(0, 0);
     tile.setVelocityY(100);
-    console.log(this.powerUp);
-    console.log(tile);
     this.physics.add.overlap(this.player, tile, this.getPowerUp, null, this);
   }
 
   getPowerUp(player, powerUp) {
     if (powerUp.texture.key == "bigPlayerPU") {
+      this.audioGrow.play();
       player.setTexture("bigPlayer");
       player.body.setSize(693, 128, true);
     } else {
+      this.audioDecrease.play();
       player.setTexture("smallPlayer");
       player.body.setSize(230, 128, true);
     }
@@ -168,12 +186,13 @@ export default class GameScene extends Phaser.Scene {
   }
 
   startGame() {
-    this.ball.setVelocity(gameSettings.ball.speed, gameSettings.ball.speed);
+    this.ball.setVelocity(0, -gameSettings.ball.speed);
     this.startTxt.setVisible(false);
     this.gameStarted = true;
   }
 
   hitPlayer(player, ball) {
+    this.audioBall.play();
     let newSpeed = ball.body.velocity.y;
     if (this.qtdHitPlayer < 4) {
       newSpeed += (this.qtdHitPlayer / 20) * newSpeed;
@@ -181,10 +200,17 @@ export default class GameScene extends Phaser.Scene {
     }
     ball.y = config.height - 64;
     ball.setVelocityY(-newSpeed);
+
+    let newXVelocityX = Math.abs(gameSettings.ball.speed);
+    if (ball.x < player.x - player.body.width / 2 + 20) {
+      ball.setVelocityX(-newXVelocityX);
+    } else if (ball.x > player.x + player.body.width / 2 - 20) {
+      ball.setVelocityX(newXVelocityX);
+    }
   }
 
   hitTile(ball, tile) {
-    console.log(this.score);
+    this.audioBall.play();
     tile.update();
     if (tile.destroyed) {
       this.score += tile.value;
@@ -202,6 +228,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   hitGround(ball, ground) {
+    this.audioBurn.play();
     if (this.lifes.qtd) {
       this.lifes.heart.children.entries[this.lifes.qtd - 1].destroy();
       this.lifes.qtd--;
@@ -236,9 +263,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   resetGame() {
-    this.ball
-      .setPosition(config.width / 2, config.height / 2)
-      .setVelocity(0, 0);
+    this.ball.setPosition(this.player.x, config.height - 70).setVelocity(0, 0);
     this.startTxt.setVisible(true);
     this.qtdHitPlayer = 0;
     this.gameStarted = false;
@@ -255,6 +280,7 @@ export default class GameScene extends Phaser.Scene {
 
   update() {
     this.movePlayerManager();
+    if (!this.gameStarted) this.ball.setX(this.player.x);
     if (Phaser.Input.Keyboard.JustDown(this.spacebar)) {
       if (!this.gameStarted) this.startGame();
       if (this.gameOverBool) this.scene.start("LoadingScene");

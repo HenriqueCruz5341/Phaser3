@@ -10,11 +10,15 @@ import tilePurple2 from "../assets/sprites/06-1-Breakout-Tiles.png";
 import ball from "../assets/sprites/58-Breakout-Tiles.png";
 import ground from "../assets/sprites/ground.png";
 import heart from "../assets/sprites/60-Breakout-Tiles.png";
-import powerUp from "../assets/sprites/49-Breakout-Tiles.png";
+import powerUp from "../assets/sprites/powerUp.png";
 import bigPlayerPU from "../assets/sprites/47-Breakout-Tiles.png";
 import smallPlayerPU from "../assets/sprites/46-Breakout-Tiles.png";
 import bigPlayer from "../assets/sprites/56-Breakout-Tiles.png";
 import smallPlayer from "../assets/sprites/57-Breakout-Tiles.png";
+import audioBall from "../assets/sounds/ball.ogg";
+import audioBurn from "../assets/sounds/burn.ogg";
+import audioGrow from "../assets/sounds/grow.ogg";
+import audioDecrease from "../assets/sounds/decrease.ogg";
 
 export default class LoadingScene extends Phaser.Scene {
   constructor() {
@@ -38,6 +42,10 @@ export default class LoadingScene extends Phaser.Scene {
     this.load.image("smallPlayerPU", smallPlayerPU);
     this.load.image("bigPlayer", bigPlayer);
     this.load.image("smallPlayer", smallPlayer);
+    this.load.audio("audioBall", audioBall);
+    this.load.audio("audioBurn", audioBurn);
+    this.load.audio("audioGrow", audioGrow);
+    this.load.audio("audioDecrease", audioDecrease);
   }
 
   create() {
