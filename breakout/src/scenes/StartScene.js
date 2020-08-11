@@ -21,30 +21,30 @@ export default class StartScene extends Phaser.Scene {
         config.width / 2,
         config.height / 2 + 100,
         "pixelFont",
-        "PLAY ",
+        "PLAY",
         50
       )
       .setOrigin(0.5, 0.5);
     this.playBtn.setOriginFromFrame();
     this.playBtn.setInteractive({ useHandCursor: true });
-    this.input.on("pointerover", this.pointerOver, this);
-    this.input.on("pointerout", this.pointerOut, this);
-    this.input.on(
-      "gameobjectdown",
-      () => this.scene.start("LoadingScene"),
-      this
-    );
+    this.playBtn.on("pointerup", () => this.scene.start("LoadingScene"), this);
 
     this.configBtn = this.add
       .bitmapText(
         config.width / 2,
         config.height / 2 + 160,
         "pixelFont",
-        "CONFIG ",
+        "CONFIG",
         50
       )
       .setOrigin(0.5, 0.5);
     this.configBtn.setOriginFromFrame();
+    this.configBtn.setInteractive({ useHandCursor: true });
+    this.configBtn.name = "config";
+    this.configBtn.on("pointerup", () => this.scene.start("ConfigScene"), this);
+
+    this.input.on("pointerover", this.pointerOver, this);
+    this.input.on("pointerout", this.pointerOut, this);
   }
 
   pointerOver(pointer, gameObject) {

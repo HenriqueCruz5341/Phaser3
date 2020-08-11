@@ -83,7 +83,7 @@ export default class GameScene extends Phaser.Scene {
     this.physics.add.collider(
       this.ball,
       this.roof,
-      () => this.audioBall.play(),
+      () => this.audioBall.play(gameSettings.sound),
       null,
       this
     );
@@ -121,7 +121,11 @@ export default class GameScene extends Phaser.Scene {
       this
     );
 
-    this.physics.world.on("worldbounds", () => this.audioBall.play(), this);
+    this.physics.world.on(
+      "worldbounds",
+      () => this.audioBall.play(gameSettings.sound),
+      this
+    );
 
     var graphics = this.add.graphics();
     graphics.fillStyle(0x000000, 1);
@@ -168,11 +172,11 @@ export default class GameScene extends Phaser.Scene {
 
   getPowerUp(player, powerUp) {
     if (powerUp.texture.key == "bigPlayerPU") {
-      this.audioGrow.play();
+      this.audioGrow.play(gameSettings.sound);
       player.setTexture("bigPlayer");
       player.body.setSize(693, 128, true);
     } else {
-      this.audioDecrease.play();
+      this.audioDecrease.play(gameSettings.sound);
       player.setTexture("smallPlayer");
       player.body.setSize(230, 128, true);
     }
@@ -192,7 +196,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   hitPlayer(player, ball) {
-    this.audioBall.play();
+    this.audioBall.play(gameSettings.sound);
     let newSpeed = ball.body.velocity.y;
     if (this.qtdHitPlayer < 4) {
       newSpeed += (this.qtdHitPlayer / 20) * newSpeed;
@@ -210,7 +214,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   hitTile(ball, tile) {
-    this.audioBall.play();
+    this.audioBall.play(gameSettings.sound);
     tile.update();
     if (tile.destroyed) {
       this.score += tile.value;
@@ -228,7 +232,7 @@ export default class GameScene extends Phaser.Scene {
   }
 
   hitGround(ball, ground) {
-    this.audioBurn.play();
+    this.audioBurn.play(gameSettings.sound);
     if (this.lifes.qtd) {
       this.lifes.heart.children.entries[this.lifes.qtd - 1].destroy();
       this.lifes.qtd--;
